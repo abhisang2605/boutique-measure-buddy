@@ -84,73 +84,157 @@ export type Database = {
       }
       measurements: {
         Row: {
+          apex_to_apex: number | null
           arm_circumference: number | null
+          armhole: number | null
+          armround_1: number | null
+          armround_2: number | null
+          armround_3: number | null
+          armround_4: number | null
           back_length: number | null
+          back_neck_depth: number | null
+          blouse_back_1: number | null
+          blouse_back_2: number | null
+          blouse_back_3: number | null
+          blouse_front_1: number | null
+          blouse_front_2: number | null
+          blouse_front_3: number | null
+          bottom_round: number | null
           bust: number | null
           calf: number | null
           chest: number | null
           created_at: string
+          cross_armhole: number | null
           custom_notes: string | null
           customer_id: string
+          dart_point: number | null
+          design_instructions: string | null
           front_length: number | null
+          front_neck_depth: number | null
+          full_length: number | null
           hip: number | null
           id: string
           inseam: number | null
           knee: number | null
+          lower_length: number | null
+          lower_waist: number | null
           neck: number | null
+          others: number | null
           outseam: number | null
           shoulder_width: number | null
           sleeve_length: number | null
+          sleeve_length_2: number | null
+          sleeve_length_3: number | null
+          sleeve_length_4: number | null
           thigh: number | null
+          top_length: number | null
           updated_at: string
+          upper_chest: number | null
           waist: number | null
           wrist: number | null
+          yoke_length: number | null
         }
         Insert: {
+          apex_to_apex?: number | null
           arm_circumference?: number | null
+          armhole?: number | null
+          armround_1?: number | null
+          armround_2?: number | null
+          armround_3?: number | null
+          armround_4?: number | null
           back_length?: number | null
+          back_neck_depth?: number | null
+          blouse_back_1?: number | null
+          blouse_back_2?: number | null
+          blouse_back_3?: number | null
+          blouse_front_1?: number | null
+          blouse_front_2?: number | null
+          blouse_front_3?: number | null
+          bottom_round?: number | null
           bust?: number | null
           calf?: number | null
           chest?: number | null
           created_at?: string
+          cross_armhole?: number | null
           custom_notes?: string | null
           customer_id: string
+          dart_point?: number | null
+          design_instructions?: string | null
           front_length?: number | null
+          front_neck_depth?: number | null
+          full_length?: number | null
           hip?: number | null
           id?: string
           inseam?: number | null
           knee?: number | null
+          lower_length?: number | null
+          lower_waist?: number | null
           neck?: number | null
+          others?: number | null
           outseam?: number | null
           shoulder_width?: number | null
           sleeve_length?: number | null
+          sleeve_length_2?: number | null
+          sleeve_length_3?: number | null
+          sleeve_length_4?: number | null
           thigh?: number | null
+          top_length?: number | null
           updated_at?: string
+          upper_chest?: number | null
           waist?: number | null
           wrist?: number | null
+          yoke_length?: number | null
         }
         Update: {
+          apex_to_apex?: number | null
           arm_circumference?: number | null
+          armhole?: number | null
+          armround_1?: number | null
+          armround_2?: number | null
+          armround_3?: number | null
+          armround_4?: number | null
           back_length?: number | null
+          back_neck_depth?: number | null
+          blouse_back_1?: number | null
+          blouse_back_2?: number | null
+          blouse_back_3?: number | null
+          blouse_front_1?: number | null
+          blouse_front_2?: number | null
+          blouse_front_3?: number | null
+          bottom_round?: number | null
           bust?: number | null
           calf?: number | null
           chest?: number | null
           created_at?: string
+          cross_armhole?: number | null
           custom_notes?: string | null
           customer_id?: string
+          dart_point?: number | null
+          design_instructions?: string | null
           front_length?: number | null
+          front_neck_depth?: number | null
+          full_length?: number | null
           hip?: number | null
           id?: string
           inseam?: number | null
           knee?: number | null
+          lower_length?: number | null
+          lower_waist?: number | null
           neck?: number | null
+          others?: number | null
           outseam?: number | null
           shoulder_width?: number | null
           sleeve_length?: number | null
+          sleeve_length_2?: number | null
+          sleeve_length_3?: number | null
+          sleeve_length_4?: number | null
           thigh?: number | null
+          top_length?: number | null
           updated_at?: string
+          upper_chest?: number | null
           waist?: number | null
           wrist?: number | null
+          yoke_length?: number | null
         }
         Relationships: [
           {
