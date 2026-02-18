@@ -38,7 +38,10 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
       toast({ title: 'Name is required', variant: 'destructive' });
       return;
     }
-
+ if (!form.phone.trim()) {
+      toast({ title: 'Phone number is required', variant: 'destructive' });
+      return;
+    }
     setLoading(true);
     try {
       if (customer) {
