@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,29 +49,48 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
     if (data) setCustomer(data);
   };
 const sendToWhatsApp = async () => {
-  const filledFields = Object.entries(measurements)
-    .filter(([_, value]) => value)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join("\n");
+  if (!customer) return;
 
-  const message = `Customer: ${customer.name}\n\n${filledFields}`;
+  // Fetch measurements for this customer
+  const { data: measurementData } = await supabase
+    .from('measurements')
+    .select('*')
+    .eq('customer_id', customerId)
+    .maybeSingle();
 
-  const { data, error } = await supabase.functions.invoke(
-    "send-whatsapp",
-    {
-      body: {
-        phone: customer.phone,
-        message,
-        imageUrls: uploadedImageUrls, // from supabase storage
-      },
-    }
-  );
+  const filledFields = measurementData
+    ? Object.entries(measurementData)
+        .filter(([key, value]) =>
+          value !== null &&
+          value !== '' &&
+          !['id', 'customer_id', 'created_at', 'updated_at'].includes(key)
+        )
+        .map(([key, value]) => `${key.replace(/_/g, ' ')}: ${value}`)
+        .join('\n')
+    : '(No measurements saved)';
+
+  const message = `Customer: ${customer.name}\n${customer.phone ? 'Phone: ' + customer.phone + '\n' : ''}\nMeasurements:\n${filledFields}`;
+
+  // Fetch image URLs for this customer
+  const { data: imageData } = await supabase
+    .from('customer_images')
+    .select('file_path')
+    .eq('customer_id', customerId);
+
+  const imageUrls = (imageData || []).map((img) => {
+    const { data } = supabase.storage.from('customer-images').getPublicUrl(img.file_path);
+    return data.publicUrl;
+  });
+
+  const { data, error } = await supabase.functions.invoke('send-whatsapp', {
+    body: { phone: customer.phone, message, imageUrls },
+  });
 
   if (error) {
     console.error(error);
-    alert("Failed to send");
+    toast({ title: 'Failed to send', description: error.message, variant: 'destructive' });
   } else {
-    alert("Sent successfully!");
+    toast({ title: 'Sent to WhatsApp successfully!' });
   }
 };
   const handleDelete = async () => {
