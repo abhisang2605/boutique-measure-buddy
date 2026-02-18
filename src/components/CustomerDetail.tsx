@@ -96,6 +96,9 @@ const sendToWhatsApp = async () => {
           <Button variant="outline" size="sm" onClick={onEdit}>
             <Pencil className="h-4 w-4" />
           </Button>
+          <Button onClick={sendToWhatsApp}>
+  Send to WhatsApp
+</Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="sm" className="text-destructive">
