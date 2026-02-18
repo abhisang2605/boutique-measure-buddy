@@ -4,7 +4,6 @@ import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import MeasurementForm from './MeasurementForm';
-import ImageGallery from './ImageGallery';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -105,7 +104,6 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
       </div>
 
       <MeasurementForm customerId={customerId} />
-      <ImageGallery customerId={customerId} />
     </div>
   );
 }
