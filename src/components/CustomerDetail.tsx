@@ -48,7 +48,32 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
       .single();
     if (data) setCustomer(data);
   };
+const sendToWhatsApp = async () => {
+  const filledFields = Object.entries(measurements)
+    .filter(([_, value]) => value)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join("\n");
 
+  const message = `Customer: ${customer.name}\n\n${filledFields}`;
+
+  const { data, error } = await supabase.functions.invoke(
+    "send-whatsapp",
+    {
+      body: {
+        phone: customer.phone,
+        message,
+        imageUrls: uploadedImageUrls, // from supabase storage
+      },
+    }
+  );
+
+  if (error) {
+    console.error(error);
+    alert("Failed to send");
+  } else {
+    alert("Sent successfully!");
+  }
+};
   const handleDelete = async () => {
     const { error } = await supabase.from('customers').delete().eq('id', customerId);
     if (error) {
