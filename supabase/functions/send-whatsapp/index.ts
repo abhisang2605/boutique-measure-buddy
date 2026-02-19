@@ -26,7 +26,7 @@ serve(async (req) => {
     }
 
     // 1️⃣ Send Text Message
-    await fetch(
+    const textResponse = await fetch(
       `https://graph.facebook.com/v18.0/${PHONE_NUMBER_ID}/messages`,
       {
         method: "POST",
@@ -38,17 +38,25 @@ serve(async (req) => {
           messaging_product: "whatsapp",
           to: phone,
           type: "text",
-          text: {
-            body: message,
-          },
+          text: { body: message },
         }),
       }
     );
 
+    const textResult = await textResponse.json();
+    console.log("META RESPONSE (text):", JSON.stringify(textResult));
+
+    if (!textResponse.ok) {
+      return new Response(
+        JSON.stringify(textResult),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // 2️⃣ Send Images (actual media)
     if (imageUrls && imageUrls.length > 0) {
       for (const imageUrl of imageUrls) {
-        await fetch(
+        const imageResponse = await fetch(
           `https://graph.facebook.com/v18.0/${PHONE_NUMBER_ID}/messages`,
           {
             method: "POST",
@@ -66,6 +74,16 @@ serve(async (req) => {
             }),
           }
         );
+
+        const imageResult = await imageResponse.json();
+        console.log("META RESPONSE (image):", JSON.stringify(imageResult));
+
+        if (!imageResponse.ok) {
+          return new Response(
+            JSON.stringify(imageResult),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
     }
 
@@ -74,6 +92,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err: any) {
+    console.log("EDGE FUNCTION ERROR:", err.message);
     return new Response(
       JSON.stringify({ error: err.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
