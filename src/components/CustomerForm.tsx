@@ -42,6 +42,10 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
       toast({ title: 'Phone number is required', variant: 'destructive' });
       return;
     }
+    if (!/^\d{10}$/.test(form.phone)) {
+  toast({ title: 'Phone number must be exactly 10 digits', variant: 'destructive' });
+  return;
+}
     setLoading(true);
     try {
       if (customer) {
@@ -85,8 +89,20 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
               <Input id="name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Customer name" />
             </div>
             <div>
-              <Label htmlFor="phone">Phone *</Label>
-              <Input id="phone" type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+91 98765 43210" />
+             <Label htmlFor="phone">Phone *</Label>
+<Input
+  id="phone"
+  type="tel"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  maxLength={10}
+  value={form.phone}
+  onChange={(e) => {
+    const onlyDigits = e.target.value.replace(/\D/g, ""); // remove non-digits
+    setForm(f => ({ ...f, phone: onlyDigits }));
+  }}
+  placeholder="Enter 10 digit number"
+/>
             </div>
             <div>
               <Label htmlFor="email">Email</Label>
