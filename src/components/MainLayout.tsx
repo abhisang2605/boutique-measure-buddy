@@ -21,17 +21,18 @@ export default function MainLayout({ children, activeTab, onTabChange }: MainLay
     await supabase.auth.signOut();
   };
 
-  const tabs: { key: Tab; label: string; Icon: React.ElementType }[] = [
-    { key: 'customers', label: 'Customers', Icon: Users },
-    { key: 'photos', label: 'Photos', Icon: Images },
-    { key: 'calendar', label: 'Calendar', Icon: CalendarDays },
-  ];
+  const tabs: {key: Tab;label: string;Icon: React.ElementType;}[] = [
+  { key: 'customers', label: 'Customers', Icon: Users },
+  { key: 'photos', label: 'Photos', Icon: Images },
+  { key: 'calendar', label: 'Calendar', Icon: CalendarDays }];
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Top bar */}
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between">
-        <span className="font-bold text-lg tracking-tight">✂️ Boutique</span>
+        <span className="font-bold text-lg tracking-tight">✂️ AD - Customer Measurements
+ </span>
         <Button variant="ghost" size="sm" onClick={handleLogout}>
           <LogOut className="h-4 w-4 mr-1" /> Logout
         </Button>
@@ -44,19 +45,18 @@ export default function MainLayout({ children, activeTab, onTabChange }: MainLay
 
       {/* Bottom Nav */}
       <nav className="fixed bottom-0 inset-x-0 z-20 bg-background border-t border-border flex">
-        {tabs.map(({ key, label, Icon }) => (
-          <button
-            key={key}
-            onClick={() => onTabChange(key)}
-            className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 text-xs transition-colors
-              ${activeTab === key ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-          >
+        {tabs.map(({ key, label, Icon }) => <button
+          key={key}
+          onClick={() => onTabChange(key)}
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 text-xs transition-colors
+              ${activeTab === key ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+
             <Icon className={`h-5 w-5 ${activeTab === key ? 'text-primary' : ''}`} />
             <span className={activeTab === key ? 'font-semibold' : ''}>{label}</span>
             {activeTab === key && <span className="absolute bottom-0 h-0.5 w-8 bg-primary rounded-full" />}
           </button>
-        ))}
+        )}
       </nav>
-    </div>
-  );
+    </div>);
+
 }
