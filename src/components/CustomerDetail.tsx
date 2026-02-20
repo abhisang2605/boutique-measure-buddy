@@ -107,7 +107,16 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
   if (!customer) return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
 
   return (
-    <div className="p-4 max-w-lg mx-auto space-y-4 pb-20">
+    <>
+      {sending && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="bg-background rounded-xl p-8 flex flex-col items-center gap-4 shadow-lg">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="text-lg font-medium text-foreground">Sending to WhatsApp...</p>
+          </div>
+        </div>
+      )}
+      <div className="p-4 max-w-lg mx-auto space-y-4 pb-20">
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={onBack} className="-ml-2">
           <ArrowLeft className="mr-1 h-4 w-4" /> Back
@@ -153,5 +162,6 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
 
       <MeasurementForm customerId={customerId} />
     </div>
+    </>
   );
 }
