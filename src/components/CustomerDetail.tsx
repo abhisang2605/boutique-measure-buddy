@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, Loader2, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import MeasurementForm from './MeasurementForm';
@@ -49,9 +49,26 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
       .single();
     if (data) setCustomer(data);
   };
+
+  const handleCallClick = async (phone: string) => {
+    try {
+      await navigator.clipboard.writeText(phone);
+
+      toast({
+        title: 'Number copied',
+        description: 'Opening dialer...',
+      });
+
+      window.location.href = `tel:${phone}`;
+    } catch (err) {
+      window.location.href = `tel:${phone}`;
+    }
+  };
+
   const sendToWhatsApp = async () => {
     if (!customer) return;
     setSending(true);
+
     try {
       const { data: measurementData } = await supabase
         .from('measurements')
@@ -62,14 +79,17 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
       const filledFields = measurementData
         ? Object.entries(measurementData)
             .filter(([key, value]) =>
-              value !== null && value !== '' &&
+              value !== null &&
+              value !== '' &&
               !['id', 'customer_id', 'created_at', 'updated_at'].includes(key)
             )
             .map(([key, value]) => `${key.replace(/_/g, ' ')}: ${value}`)
             .join('\n')
         : '(No measurements saved)';
 
-      const message = `Customer: ${customer.name}\n${customer.phone ? 'Phone: ' + customer.phone + '\n' : ''}\nMeasurements:\n${filledFields}`;
+      const message = `Customer: ${customer.name}\n${
+        customer.phone ? 'Phone: ' + customer.phone + '\n' : ''
+      }\nMeasurements:\n${filledFields}`;
 
       const { data: imageData } = await supabase
         .from('customer_images')
@@ -77,18 +97,26 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
         .eq('customer_id', customerId);
 
       const imageUrls = (imageData || []).map((img) => {
-        const { data } = supabase.storage.from('customer-images').getPublicUrl(img.file_path);
+        const { data } = supabase.storage
+          .from('customer-images')
+          .getPublicUrl(img.file_path);
         return data.publicUrl;
       });
 
-      const phoneWithCode = customer.phone ? `91${customer.phone.replace(/\D/g, '').replace(/^91/, '')}` : '';
+      const phoneWithCode = customer.phone
+        ? `91${customer.phone.replace(/\D/g, '').replace(/^91/, '')}`
+        : '';
 
       const { error } = await supabase.functions.invoke('send-whatsapp', {
         body: { phone: phoneWithCode, message, imageUrls },
       });
 
       if (error) {
-        toast({ title: 'Failed to send', description: error.message, variant: 'destructive' });
+        toast({
+          title: 'Failed to send',
+          description: error.message,
+          variant: 'destructive',
+        });
       } else {
         toast({ title: 'Sent to WhatsApp successfully!' });
       }
@@ -96,17 +124,29 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
       setSending(false);
     }
   };
+
   const handleDelete = async () => {
-    const { error } = await supabase.from('customers').delete().eq('id', customerId);
+    const { error } = await supabase
+      .from('customers')
+      .delete()
+      .eq('id', customerId);
+
     if (error) {
-      toast({ title: 'Error deleting', description: error.message, variant: 'destructive' });
+      toast({
+        title: 'Error deleting',
+        description: error.message,
+        variant: 'destructive',
+      });
     } else {
       toast({ title: 'Customer deleted' });
       onBack();
     }
   };
 
-  if (!customer) return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
+  if (!customer)
+    return (
+      <div className="p-4 text-center text-muted-foreground">Loading...</div>
+    );
 
   return (
     <>
@@ -114,56 +154,114 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
           <div className="bg-background rounded-xl p-8 flex flex-col items-center gap-4 shadow-lg">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="text-lg font-medium text-foreground">Sending to WhatsApp...</p>
+            <p className="text-lg font-medium text-foreground">
+              Sending to WhatsApp...
+            </p>
           </div>
         </div>
       )}
+
       <div className="p-4 max-w-lg mx-auto space-y-4 pb-20">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={onBack} className="-ml-2">
-          <ArrowLeft className="mr-1 h-4 w-4" /> Back
-        </Button>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onEdit}>
-            <Pencil className="h-4 w-4" />
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" onClick={onBack} className="-ml-2">
+            <ArrowLeft className="mr-1 h-4 w-4" /> Back
           </Button>
-          <Button onClick={sendToWhatsApp} disabled={sending} size="sm">
-            {sending ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Sending...</> : 'Send to WhatsApp'}
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-destructive">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete {customer.name}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete this customer, their measurements, and all photos.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={onEdit}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+
+            <Button
+              onClick={sendToWhatsApp}
+              disabled={sending}
+              size="sm"
+            >
+              {sending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Send to WhatsApp'
+              )}
+            </Button>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Delete {customer.name}?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete this customer, their
+                    measurements, and all photos.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
-      </div>
 
-      <div>
-        <h1 className="text-2xl font-bold">{customer.name}</h1>
-        {customer.phone && <p className="text-sm text-muted-foreground">{customer.phone}</p>}
-        {customer.email && <p className="text-sm text-muted-foreground">{customer.email}</p>}
-        {customer.address && <p className="text-sm text-muted-foreground mt-1">{customer.address}</p>}
-        {customer.notes && <p className="text-sm mt-2 bg-accent/50 rounded-md p-2">{customer.notes}</p>}
-      </div>
+        {/* Customer Info Section */}
+        <div>
+          <h1 className="text-2xl font-bold">{customer.name}</h1>
 
-      <MeasurementForm customerId={customerId} />
-    </div>
+          {customer.phone && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+              <span>{customer.phone}</span>
+
+              <button
+                type="button"
+                onClick={() => handleCallClick(customer.phone!)}
+                className="p-1 rounded-full hover:bg-primary/10 transition"
+              >
+                <Phone className="h-4 w-4 text-primary" />
+              </button>
+            </div>
+          )}
+
+          {customer.email && (
+            <p className="text-sm text-muted-foreground">
+              {customer.email}
+            </p>
+          )}
+
+          {customer.address && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {customer.address}
+            </p>
+          )}
+
+          {customer.notes && (
+            <p className="text-sm mt-2 bg-accent/50 rounded-md p-2">
+              {customer.notes}
+            </p>
+          )}
+        </div>
+
+        <MeasurementForm customerId={customerId} />
+      </div>
     </>
   );
 }
