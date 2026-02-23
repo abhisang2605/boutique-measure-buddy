@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Pencil, Trash2, Loader2, Phone } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, Loader2, Phone, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import MeasurementForm from './MeasurementForm';
@@ -172,21 +172,20 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
               <Pencil className="h-4 w-4" />
             </Button>
 
-            <Button
-              onClick={sendToWhatsApp}
-              disabled={sending}
-              size="sm"
-            >
-              {sending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                'Send to WhatsApp'
-              )}
-            </Button>
-
+           
+<Button
+  onClick={sendToWhatsApp}
+  disabled={sending}
+  size="icon"
+  className="bg-[#25D366] hover:bg-[#20b857] text-white"
+>
+  {sending ? (
+    <Loader2 className="h-4 w-4 animate-spin" />
+  ) : (
+    <MessageCircle className="h-4 w-4" />
+  )}
+</Button>
+            
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
