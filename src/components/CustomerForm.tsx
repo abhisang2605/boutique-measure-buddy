@@ -33,6 +33,47 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
     notes: customer?.notes ?? '',
   });
 
+  // ✅ Contact Picker Support Detection
+  const isContactSupported =
+    typeof navigator !== 'undefined' &&
+    'contacts' in navigator &&
+    // @ts-ignore
+    typeof navigator.contacts?.select === 'function';
+
+  // ✅ Contact Picker Logic
+  const handlePickContact = async () => {
+    try {
+      const props = ['name', 'tel'];
+      const opts = { multiple: false };
+
+      // @ts-ignore
+      const contacts = await navigator.contacts.select(props, opts);
+
+      if (contacts.length > 0) {
+        const contact = contacts[0];
+
+        const name = contact.name?.[0] || '';
+        let phone = contact.tel?.[0] || '';
+
+        // Remove all non-digits
+        phone = phone.replace(/\D/g, '');
+
+        // Keep last 10 digits (remove country code)
+        if (phone.length > 10) {
+          phone = phone.slice(-10);
+        }
+
+        setForm(prev => ({
+          ...prev,
+          name,
+          phone
+        }));
+      }
+    } catch (err) {
+      console.log('Contact picker cancelled or not supported');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -41,7 +82,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
       return;
     }
 
-    // ✅ Phone is optional
+    // ✅ Phone optional
     // If entered → must be exactly 10 digits
     if (form.phone.trim() !== '' && !/^\d{10}$/.test(form.phone)) {
       toast({ title: 'Phone number must be exactly 10 digits', variant: 'destructive' });
@@ -101,6 +142,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
 
+            {/* Name */}
             <div>
               <Label htmlFor="name">Name *</Label>
               <Input
@@ -109,8 +151,22 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="Customer name"
               />
+
+              {/* Contact Picker Button */}
+              {isContactSupported && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={handlePickContact}
+                >
+                  Pick from Contacts
+                </Button>
+              )}
             </div>
 
+            {/* Phone */}
             <div>
               <Label htmlFor="phone">Phone</Label>
               <Input
@@ -128,6 +184,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
               />
             </div>
 
+            {/* Email */}
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
@@ -139,6 +196,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
               />
             </div>
 
+            {/* Address */}
             <div>
               <Label htmlFor="address">Address</Label>
               <Textarea
@@ -150,6 +208,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
               />
             </div>
 
+            {/* Notes */}
             <div>
               <Label htmlFor="notes">Notes</Label>
               <Textarea
