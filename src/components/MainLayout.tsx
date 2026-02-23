@@ -19,7 +19,7 @@ interface MainLayoutProps {
 export default function MainLayout({ children, activeTab, onTabChange }: MainLayoutProps) {
   const { toast } = useToast();
   const [storageOpen, setStorageOpen] = useState(false);
-  const [storageData, setStorageData] = useState<{ totalMB: string; limitMB: number } | null>(null);
+  const [storageData, setStorageData] = useState<{totalMB: string;limitMB: number;} | null>(null);
   const [storageLoading, setStorageLoading] = useState(false);
 
   const fetchStorageUsage = async () => {
@@ -54,7 +54,7 @@ export default function MainLayout({ children, activeTab, onTabChange }: MainLay
     <div className="flex flex-col min-h-screen bg-background">
       {/* Top bar */}
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between">
-        <span className="font-bold text-lg tracking-tight">✂️ AD - Customer Measurements</span>
+        <span className="font-bold text-lg tracking-tight">✂️ AD - Measurement     </span>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" onClick={handleStorageClick}>
             <HardDrive className="h-4 w-4 mr-1" /> Storage
@@ -92,22 +92,22 @@ export default function MainLayout({ children, activeTab, onTabChange }: MainLay
               <HardDrive className="h-5 w-5" /> Storage Usage
             </DialogTitle>
           </DialogHeader>
-          {storageLoading ? (
-            <div className="flex justify-center py-8">
+          {storageLoading ?
+          <div className="flex justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
-          ) : storageData ? (
-            <div className="space-y-4">
+            </div> :
+          storageData ?
+          <div className="space-y-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-primary">{storageData.totalMB} MB</p>
                 <p className="text-sm text-muted-foreground">of {storageData.limitMB} MB used</p>
               </div>
-              <Progress value={(parseFloat(storageData.totalMB) / storageData.limitMB) * 100} className="h-3" />
+              <Progress value={parseFloat(storageData.totalMB) / storageData.limitMB * 100} className="h-3" />
               <p className="text-xs text-muted-foreground text-center">
                 {(storageData.limitMB - parseFloat(storageData.totalMB)).toFixed(2)} MB remaining
               </p>
-            </div>
-          ) : null}
+            </div> :
+          null}
         </DialogContent>
       </Dialog>
     </div>);
