@@ -38,10 +38,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
       toast({ title: 'Name is required', variant: 'destructive' });
       return;
     }
- if (!form.phone.trim()) {
-      toast({ title: 'Phone number is required', variant: 'destructive' });
-      return;
-    }
+
     if (!/^\d{10}$/.test(form.phone)) {
   toast({ title: 'Phone number must be exactly 10 digits', variant: 'destructive' });
   return;
@@ -89,7 +86,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
               <Input id="name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Customer name" />
             </div>
             <div>
-             <Label htmlFor="phone">Phone *</Label>
+             <Label htmlFor="phone">Phone</Label>
 <Input
   id="phone"
   type="tel"

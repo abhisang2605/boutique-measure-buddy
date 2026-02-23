@@ -4,7 +4,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, LogOut, Users, Images, CalendarDays } from 'lucide-react';
+import { Loader2, LogOut, Users, Images, CalendarDays, HardDrive } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
 
 type Tab = 'customers' | 'photos' | 'calendar';
 
@@ -16,6 +18,27 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children, activeTab, onTabChange }: MainLayoutProps) {
   const { toast } = useToast();
+  const [storageOpen, setStorageOpen] = useState(false);
+  const [storageData, setStorageData] = useState<{totalMB: string;limitMB: number;} | null>(null);
+  const [storageLoading, setStorageLoading] = useState(false);
+
+  const fetchStorageUsage = async () => {
+    setStorageLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('storage-usage');
+      if (error) throw error;
+      setStorageData(data);
+    } catch (err: any) {
+      toast({ title: 'Failed to fetch storage usage', description: err.message, variant: 'destructive' });
+    } finally {
+      setStorageLoading(false);
+    }
+  };
+
+  const handleStorageClick = () => {
+    setStorageOpen(true);
+    fetchStorageUsage();
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -31,11 +54,15 @@ export default function MainLayout({ children, activeTab, onTabChange }: MainLay
     <div className="flex flex-col min-h-screen bg-background">
       {/* Top bar */}
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between">
-        <span className="font-bold text-lg tracking-tight">✂️ AD - Customer Measurements
- </span>
-        <Button variant="ghost" size="sm" onClick={handleLogout}>
-          <LogOut className="h-4 w-4 mr-1" /> Logout
-        </Button>
+        <span className="font-bold text-lg tracking-tight">✂️ AD - Measurement     </span>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={handleStorageClick}>
+            <HardDrive className="h-4 w-4 mr-1" /> Storage
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
+            <LogOut className="h-4 w-4 mr-1" /> Logout
+          </Button>
+        </div>
       </header>
 
       {/* Content */}
@@ -57,6 +84,32 @@ export default function MainLayout({ children, activeTab, onTabChange }: MainLay
           </button>
         )}
       </nav>
+      {/* Storage Usage Dialog */}
+      <Dialog open={storageOpen} onOpenChange={setStorageOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <HardDrive className="h-5 w-5" /> Storage Usage
+            </DialogTitle>
+          </DialogHeader>
+          {storageLoading ?
+          <div className="flex justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div> :
+          storageData ?
+          <div className="space-y-4">
+              <div className="text-center">
+                <p className="text-3xl font-bold text-primary">{storageData.totalMB} MB</p>
+                <p className="text-sm text-muted-foreground">of {storageData.limitMB} MB used</p>
+              </div>
+              <Progress value={parseFloat(storageData.totalMB) / storageData.limitMB * 100} className="h-3" />
+              <p className="text-xs text-muted-foreground text-center">
+                {(storageData.limitMB - parseFloat(storageData.totalMB)).toFixed(2)} MB remaining
+              </p>
+            </div> :
+          null}
+        </DialogContent>
+      </Dialog>
     </div>);
 
 }

@@ -47,8 +47,23 @@ export default function PhotosGallery() {
     );
   });
 
+  // Group by customer
+  const grouped = filtered.reduce((acc: Record<string, ImageRow[]>, img) => {
+    const name = img.customers?.name || 'Unknown';
+    if (!acc[name]) acc[name] = [];
+    acc[name].push(img);
+    return acc;
+  }, {});
+
+  // Flat list for lightbox navigation
+  const flatFiltered = Object.values(grouped).flat();
   const handlePrev = () => setSelected(s => (s !== null && s > 0 ? s - 1 : s));
-  const handleNext = () => setSelected(s => (s !== null && s < filtered.length - 1 ? s + 1 : s));
+  const handleNext = () => setSelected(s => (s !== null && s < flatFiltered.length - 1 ? s + 1 : s));
+
+  const openLightbox = (img: ImageRow) => {
+    const idx = flatFiltered.findIndex(i => i.id === img.id);
+    setSelected(idx >= 0 ? idx : null);
+  };
 
   return (
     <div className="p-4 max-w-lg mx-auto">
@@ -75,24 +90,32 @@ export default function PhotosGallery() {
 
       {loading ? (
         <p className="text-center text-muted-foreground py-12">Loading...</p>
-      ) : filtered.length === 0 ? (
+      ) : Object.keys(grouped).length === 0 ? (
         <p className="text-center text-muted-foreground py-12">No photos found</p>
       ) : (
-        <div className="grid grid-cols-3 gap-1.5">
-          {filtered.map((img, i) => (
-            <div
-              key={img.id}
-              className="aspect-square rounded-md overflow-hidden bg-muted cursor-pointer relative group"
-              onClick={() => setSelected(i)}
-            >
-              <img
-                src={getUrl(img.file_path)}
-                alt={img.file_name}
-                className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                loading="lazy"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-white text-[10px] truncate">{img.customers?.name}</p>
+        <div className="space-y-6">
+          {Object.entries(grouped).map(([customerName, imgs]) => (
+            <div key={customerName} className="rounded-lg border border-border overflow-hidden">
+              <div className="bg-muted px-4 py-3 flex items-center gap-2">
+                <span className="text-lg">👤</span>
+                <h3 className="font-semibold text-sm">{customerName}</h3>
+                <span className="text-xs text-muted-foreground ml-auto">{imgs.length} photos</span>
+              </div>
+              <div className="grid grid-cols-3 gap-1 p-1">
+                {imgs.map(img => (
+                  <div
+                    key={img.id}
+                    className="aspect-square rounded overflow-hidden bg-muted cursor-pointer relative group"
+                    onClick={() => openLightbox(img)}
+                  >
+                    <img
+                      src={getUrl(img.file_path)}
+                      alt={img.file_name}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           ))}
@@ -102,16 +125,16 @@ export default function PhotosGallery() {
       {/* Lightbox */}
       <Dialog open={selected !== null} onOpenChange={() => setSelected(null)}>
         <DialogContent className="max-w-screen-sm p-0 bg-black border-none">
-          {selected !== null && filtered[selected] && (
+          {selected !== null && flatFiltered[selected] && (
             <div className="relative">
               <img
-                src={getUrl(filtered[selected].file_path)}
-                alt={filtered[selected].file_name}
+                src={getUrl(flatFiltered[selected].file_path)}
+                alt={flatFiltered[selected].file_name}
                 className="w-full max-h-[80vh] object-contain"
               />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                <p className="text-white font-medium">{filtered[selected].customers?.name}</p>
-                <p className="text-white/60 text-xs">{filtered[selected].file_name}</p>
+                <p className="text-white font-medium">{flatFiltered[selected].customers?.name}</p>
+                <p className="text-white/60 text-xs">{flatFiltered[selected].file_name}</p>
               </div>
               <button
                 onClick={handlePrev}
@@ -123,7 +146,7 @@ export default function PhotosGallery() {
               <button
                 onClick={handleNext}
                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white rounded-full p-2 disabled:opacity-30"
-                disabled={selected === filtered.length - 1}
+                disabled={selected === flatFiltered.length - 1}
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
