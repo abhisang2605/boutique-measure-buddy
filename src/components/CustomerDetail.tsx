@@ -81,8 +81,10 @@ export default function CustomerDetail({ customerId, onBack, onEdit }: CustomerD
         return data.publicUrl;
       });
 
+      const phoneWithCode = customer.phone ? `91${customer.phone.replace(/\D/g, '').replace(/^91/, '')}` : '';
+
       const { error } = await supabase.functions.invoke('send-whatsapp', {
-        body: { phone: customer.phone, message, imageUrls },
+        body: { phone: phoneWithCode, message, imageUrls },
       });
 
       if (error) {
