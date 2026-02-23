@@ -239,6 +239,10 @@ export default function MeasurementForm({ customerId }: MeasurementFormProps) {
       const now = new Date().toISOString();
       setLastSaved(now);
       toast({ title: 'Measurements saved ✓' });
+      window.scrollTo({
+  top: 0,
+  behavior: 'smooth'
+});
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
