@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Contact } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,6 +33,47 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
     notes: customer?.notes ?? '',
   });
 
+  // ✅ Contact Picker Support Detection
+  const isContactSupported =
+    typeof navigator !== 'undefined' &&
+    'contacts' in navigator &&
+    // @ts-ignore
+    typeof navigator.contacts?.select === 'function';
+
+  // ✅ Contact Picker Logic
+  const handlePickContact = async () => {
+    try {
+      const props = ['name', 'tel'];
+      const opts = { multiple: false };
+
+      // @ts-ignore
+      const contacts = await navigator.contacts.select(props, opts);
+
+      if (contacts.length > 0) {
+        const contact = contacts[0];
+
+        const name = contact.name?.[0] || '';
+        let phone = contact.tel?.[0] || '';
+
+        // Remove all non-digits
+        phone = phone.replace(/\D/g, '');
+
+        // Keep last 10 digits (remove country code)
+        if (phone.length > 10) {
+          phone = phone.slice(-10);
+        }
+
+        setForm(prev => ({
+          ...prev,
+          name,
+          phone
+        }));
+      }
+    } catch (err) {
+      console.log('Contact picker cancelled or not supported');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -41,8 +82,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
       return;
     }
 
-    // ✅ Phone is optional
-    // If entered → must be exactly 10 digits
+    // Phone optional — if entered must be 10 digits
     if (form.phone.trim() !== '' && !/^\d{10}$/.test(form.phone)) {
       toast({ title: 'Phone number must be exactly 10 digits', variant: 'destructive' });
       return;
@@ -101,16 +141,31 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
 
+            {/* Name Field with Inline Contact Icon */}
             <div>
               <Label htmlFor="name">Name *</Label>
-              <Input
-                id="name"
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="Customer name"
-              />
+              <div className="relative mt-1">
+                <Input
+                  id="name"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder="Customer name"
+                  className="pr-10"
+                />
+
+                {isContactSupported && (
+                  <button
+                    type="button"
+                    onClick={handlePickContact}
+                    className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Contact className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
             </div>
 
+            {/* Phone Field */}
             <div>
               <Label htmlFor="phone">Phone</Label>
               <Input
@@ -128,6 +183,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
               />
             </div>
 
+            {/* Email */}
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
@@ -139,6 +195,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
               />
             </div>
 
+            {/* Address */}
             <div>
               <Label htmlFor="address">Address</Label>
               <Textarea
@@ -150,6 +207,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
               />
             </div>
 
+            {/* Notes */}
             <div>
               <Label htmlFor="notes">Notes</Label>
               <Textarea
