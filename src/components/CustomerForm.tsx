@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Contact } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -82,8 +82,7 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
       return;
     }
 
-    // ✅ Phone optional
-    // If entered → must be exactly 10 digits
+    // Phone optional — if entered must be 10 digits
     if (form.phone.trim() !== '' && !/^\d{10}$/.test(form.phone)) {
       toast({ title: 'Phone number must be exactly 10 digits', variant: 'destructive' });
       return;
@@ -142,31 +141,31 @@ export default function CustomerForm({ customer, onSaved, onBack }: CustomerForm
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* Name */}
+            {/* Name Field with Inline Contact Icon */}
             <div>
               <Label htmlFor="name">Name *</Label>
-              <Input
-                id="name"
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="Customer name"
-              />
+              <div className="relative mt-1">
+                <Input
+                  id="name"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder="Customer name"
+                  className="pr-10"
+                />
 
-              {/* Contact Picker Button */}
-              {isContactSupported && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
-                  onClick={handlePickContact}
-                >
-                  Pick from Contacts
-                </Button>
-              )}
+                {isContactSupported && (
+                  <button
+                    type="button"
+                    onClick={handlePickContact}
+                    className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Contact className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Phone */}
+            {/* Phone Field */}
             <div>
               <Label htmlFor="phone">Phone</Label>
               <Input
