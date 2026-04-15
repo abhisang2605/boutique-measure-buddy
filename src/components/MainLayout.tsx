@@ -40,9 +40,6 @@ export default function MainLayout({ children, activeTab, onTabChange }: MainLay
     fetchStorageUsage();
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
 
   const tabs: {key: Tab;label: string;Icon: React.ElementType;}[] = [
   { key: 'customers', label: 'Customers', Icon: Users },
