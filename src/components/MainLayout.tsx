@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, LogOut, Users, Images, CalendarDays, HardDrive } from 'lucide-react';
+import { Loader2, Users, Images, CalendarDays, HardDrive } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 
@@ -40,9 +38,6 @@ export default function MainLayout({ children, activeTab, onTabChange }: MainLay
     fetchStorageUsage();
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
 
   const tabs: {key: Tab;label: string;Icon: React.ElementType;}[] = [
   { key: 'customers', label: 'Customers', Icon: Users },
@@ -58,9 +53,6 @@ export default function MainLayout({ children, activeTab, onTabChange }: MainLay
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" onClick={handleStorageClick}>
             <HardDrive className="h-4 w-4 mr-1" /> Storage
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-1" /> Logout
           </Button>
         </div>
       </header>
